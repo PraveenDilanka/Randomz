@@ -1,0 +1,280 @@
+*** Links ***
+http://beta.studentitzone.com/UI/viewarticle/Caesar-cipher-Encryption-and-Decryption-Program-in-Java
+http://mrbool.com/encrypting-and-decrypting-content-with-java/24843
+
+https://gist.github.com/bricef/2436364#file-aes-java-L26
+http://aesencryption.net/
+
+***** Assign values *****
+
+*** CaesarCrypt.java ***
+private final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890+-";
+   
+   
+public String encrypt(String plainText,int shiftKey)
+{
+   // plainText = plainText.toLowerCase();
+   String cipherText="";
+   int charPosition;
+   int keyVal;
+   char replaceVal;
+   
+   for(int i=0; i < plainText.length(); i++)
+   {
+      /*
+        charPosition = chars.indexOf(plainText.charAt(i));
+        keyVal = (charPosition + shiftKey) % 64;
+        
+        replaceVal = this.chars.charAt(keyVal);
+        cipherText += replaceVal;*/
+      if (plainText.charAt(i) == 'a')
+      {
+         cipherText += "1";
+      }
+      if (plainText.charAt(i) == 'b')
+      {
+         cipherText += "2";
+      }
+      if (plainText.charAt(i) == 'c')
+      {
+         cipherText += "3";
+      }
+      if (plainText.charAt(i) == 'd')
+      {
+         cipherText += "4";
+      }
+   }
+   return cipherText;
+}
+
+public String decrypt(String cipherText, int shiftKey)
+{
+   // cipherText = cipherText.toLowerCase();
+   String plainText="";
+   int charPosition;
+   int keyVal;
+   char replaceVal;
+   
+   for(int i=0;i<cipherText.length();i++)
+   {
+      /*
+        charPosition = this.chars.indexOf(cipherText.charAt(i));
+        keyVal = charPosition - shiftKey;
+        
+        if(keyVal < 0)
+        {
+              keyVal = this.chars.length() + keyVal;
+        }
+        
+        replaceVal = this.chars.charAt(keyVal);
+        plainText += replaceVal;*/
+      if (cipherText.charAt(i) == '1')
+      {
+         plainText += "a";
+      }
+      if (cipherText.charAt(i) == '2')
+      {
+         plainText += "b";
+      }
+      if (cipherText.charAt(i) == '3')
+      {
+         plainText += "c";
+      }
+      if (cipherText.charAt(i) == '4')
+      {
+         plainText += "d";
+      }
+   }
+   
+   return plainText;
+}
+
+*** MainScreen.java ***
+private void btnDecActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDecActionPerformed
+  // TODO add your handling code here:
+  String cipherText = txtEnc.getText();
+  int shiftKey= Integer.parseInt(txtShift.getText());
+  
+  CaesarCrypt cc = new CaesarCrypt();
+  String plainText = cc.decrypt(cipherText, shiftKey);
+  lblDec.setText(plainText);
+}//GEN-LAST:event_btnDecActionPerformed
+
+private void btnEncActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEncActionPerformed
+  // TODO add your handling code here:
+  String plainText = txtDec.getText();
+  int shiftKey= Integer.parseInt(txtShift.getText());
+  
+  CaesarCrypt cc = new CaesarCrypt();
+  String cipherText = cc.encrypt(plainText, shiftKey);
+  lblEnc.setText(cipherText);
+}//GEN-LAST:event_btnEncActionPerformed
+
+*********************************************************************
+
+***** Shift key *****
+
+*** CaesarCrypt.java ***
+private final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890+-";
+   
+public String encrypt(String plainText,int shiftKey)
+{
+   // plainText = plainText.toLowerCase();
+   String cipherText="";
+   int charPosition;
+   int keyVal;
+   char replaceVal;
+   
+   for(int i=0; i < plainText.length(); i++)
+   {
+        charPosition = chars.indexOf(plainText.charAt(i));
+        keyVal = (charPosition + shiftKey) % 64;
+        
+        replaceVal = this.chars.charAt(keyVal);
+        cipherText += replaceVal;
+   }
+   return cipherText;
+}
+
+public String decrypt(String cipherText, int shiftKey)
+{
+   // cipherText = cipherText.toLowerCase();
+   String plainText="";
+   int charPosition;
+   int keyVal;
+   char replaceVal;
+   
+   for(int i=0;i<cipherText.length();i++)
+   {
+        charPosition = this.chars.indexOf(cipherText.charAt(i));
+        keyVal = charPosition - shiftKey;
+        
+        if(keyVal < 0)
+        {
+              keyVal = this.chars.length() + keyVal;
+        }
+        
+        replaceVal = this.chars.charAt(keyVal);
+        plainText += replaceVal;
+   }         
+   return plainText;
+}
+
+*** MainScreen.java ***
+private void btnDecActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDecActionPerformed
+  // TODO add your handling code here:
+  String cipherText = txtEnc.getText();
+  int shiftKey= Integer.parseInt(txtShift.getText());
+  
+  CaesarCrypt cc = new CaesarCrypt();
+  String plainText = cc.decrypt(cipherText, shiftKey);
+  lblDec.setText(plainText);
+}//GEN-LAST:event_btnDecActionPerformed
+
+private void btnEncActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEncActionPerformed
+  // TODO add your handling code here:
+  String plainText = txtDec.getText();
+  int shiftKey= Integer.parseInt(txtShift.getText());
+  
+  CaesarCrypt cc = new CaesarCrypt();
+  String cipherText = cc.encrypt(plainText, shiftKey);
+  lblEnc.setText(cipherText);
+}//GEN-LAST:event_btnEncActionPerformed
+
+**************************************************************************
+
+***** Break The Code *****
+*** Program.cs ***
+static void Main(string[] args)
+{
+  //Int64 id = Encrypt("abacus");
+  string word=Dencrypt(1630866511392489104);
+  System.Console.WriteLine(word);
+  System.Console.ReadLine();
+}
+
+private static Int64 Encrypt(string p)
+{
+  Int64 c = 31;
+  for (int i = 0; i < p.Length; i++)
+  {
+      c = c * 47 + (byte)p[i] % 97;
+  }
+
+  return c;
+}
+
+private static string Dencrypt(Int64 id)
+{
+  string word = "";
+  while (id > 31)
+  {           
+      byte c= (byte) (id % 47 + 97) ; // remove the multiplied value and extract the character
+      char ch= Convert.ToChar(c); // get the charactor 
+      word = ch + word; // create the word
+      id = id / 47;
+      
+  }
+
+  return word;
+}
+
+**************************************************************************
+
+***** Console Cipher *****
+****CaesarCipher.java ***
+public static void main(String[] args) throws IOException {
+  BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    System.out.println("Enter Text to Encrypt");
+  
+   String plainText = br.readLine();
+   
+   System.out.println("Enter Shift Key");
+   int shiftKey= Integer.parseInt(br.readLine());
+  
+   CaesarCrypt cc = new CaesarCrypt();
+  
+   String cipherText = cc.encrypt(plainText, shiftKey);
+   System.out.println("Your Plain  Text :" + plainText);
+   System.out.println("Your Encrypted Text :" + cipherText);
+  
+   String cPlainText = cc.Decrypt(cipherText,shiftKey);
+   System.out.println("Your Decrypted Text  :" + cPlainText);
+}
+**************************************************************************
+
+***** Shashi Cipher *****
+*** Main.java ***
+private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+  try {
+      Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); //type of security
+      input = type.getText().getBytes();
+      SecretKeySpec key = new SecretKeySpec(keyBytes, "DES");
+      IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
+      
+      cipher = Cipher.getInstance("DES/CTR/NoPadding", "BC"); //CTR of encryption
+      cipher.init(Cipher.ENCRYPT_MODE, key, ivSpec);
+      chiperText = new byte[cipher.getOutputSize(input.length)];
+      ctLenght = cipher.update(input, 0, input.length, chiperText, 0);
+      
+      ctLenght += cipher.doFinal(chiperText, ctLenght);
+      encrypt.setText(new String(chiperText));
+  } catch (Exception e) {
+      JOptionPane.showMessageDialog(null, e);
+  }
+}//GEN-LAST:event_jButton1ActionPerformed
+
+private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+  try {
+      cipher.init(Cipher.DECRYPT_MODE, key,ivSpec);
+      byte[] plainText = new byte[cipher.getOutputSize(ctLenght)];
+      int ptLength = cipher.update(chiperText, 0,ctLenght,plainText,0);
+      
+      ptLength += cipher.doFinal(plainText, ptLength);
+      decrypt.setText(new String(plainText));
+  } catch (Exception e) {
+      JOptionPane.showMessageDialog(null, e);
+  }
+}//GEN-LAST:event_jButton2ActionPerformed
+
+**************************************************************************
