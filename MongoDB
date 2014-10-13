@@ -1,3 +1,6 @@
+Links:
+https://api.mongodb.org/java/current/com/mongodb/DBCollection.html
+
 *** DBManager.java ***
 import java.net.UnknownHostException;
 
