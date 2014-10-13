@@ -23,3 +23,307 @@ public class DBManager {
    }
 }
 ************************************************************
+
+*** User.java ***
+public class User {
+   private int id;
+   private String firstName;
+   private String lastName;
+   private String email;
+
+
+   public int getId() {
+      return id;
+   }
+
+   public void setId(int id) {
+      this.id = id;
+   }
+
+   public String getFirstName() {
+      return firstName;
+   }
+
+   public void setFirstName(String firstName) {
+      this.firstName = firstName;
+   }
+
+   public String getLastName() {
+      return lastName;
+   }
+
+   public void setLastName(String lastName) {
+      this.lastName = lastName;
+   }
+
+   public String getEmail() {
+      return email;
+   }
+
+   public void setEmail(String email) {
+      this.email = email;
+   }
+}
+************************************************************
+
+*** Main.java ***
+private void btnAddUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddUserActionPerformed
+   // TODO add your handling code here:
+   User newUser = new User();
+   newUser.setId(Integer.parseInt(txtId.getText()));
+   newUser.setFirstName(txtFirstName.getText());
+   newUser.setLastName(txtLastName.getText());
+   newUser.setEmail(txtEmail.getText());
+   
+   DBObject doc = createDBObject(newUser);
+   
+   DB userDB = DBManager.getDatabase();
+   DBCollection col = userDB.getCollection("user");
+   WriteResult result = col.insert(doc);
+}//GEN-LAST:event_btnAddUserActionPerformed
+
+private void btnUpdateUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateUserActionPerformed
+   // TODO add your handling code here:
+   User newUser = new User();
+   newUser.setId(Integer.parseInt(txtId.getText()));
+   newUser.setFirstName(txtFirstName.getText());
+   newUser.setLastName(txtLastName.getText());
+   newUser.setEmail(txtEmail.getText());
+   
+   // Search
+   BasicDBObject query = new BasicDBObject();     
+   query.put("_id", newUser.getId());
+   
+   // Set DB
+   DB userDB = DBManager.getDatabase();
+   DBCollection col = userDB.getCollection("user");
+   
+   // Update object
+   DBObject doc = updateDBObject(newUser);
+   
+   /*
+   // Method A
+   // This will update all values, including all fields and values
+   WriteResult result = col.update(query, doc);
+   */
+   
+   // Method B
+   // Update object only with the relevant fields using $set
+   BasicDBObject updateObj = new BasicDBObject();
+   updateObj.put("$set", doc);      
+   WriteResult result = col.update(query, updateObj);
+}
+
+private static DBObject createDBObject(User user) {
+   BasicDBObjectBuilder docBuilder = BasicDBObjectBuilder.start();
+   
+   docBuilder.append("_id", user.getId());
+   docBuilder.append("firstName", user.getFirstName());
+   docBuilder.append("lastName", user.getLastName());
+   docBuilder.append("email", user.getEmail());
+   
+   return docBuilder.get();
+}
+
+private static DBObject updateDBObject(User user) {
+   BasicDBObjectBuilder docBuilder = BasicDBObjectBuilder.start();
+   
+   docBuilder.append("firstName", user.getFirstName());
+   docBuilder.append("lastName", user.getLastName());
+   docBuilder.append("email", user.getEmail());    
+   
+   return docBuilder.get();
+}
+************************************************************
+
+*** Main2.java ***
+private void btnAddUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddUserActionPerformed
+   // TODO add your handling code here:
+   // Create user object
+   User newUser = new User();
+   newUser.setId(Integer.parseInt(txtId.getText()));
+   newUser.setFirstName(txtFirstName.getText());
+   newUser.setLastName(txtLastName.getText());
+   newUser.setEmail(txtEmail.getText());
+   
+   // Get connection to the Collection
+   DB userDB = DBManager.getDatabase();
+   DBCollection col = userDB.getCollection("user");
+   
+   // Insert the Document
+   BasicDBObject doc = new BasicDBObject();     
+   doc.put("_id", newUser.getId());
+   doc.put("firstName", newUser.getFirstName());
+   doc.put("lastName", newUser.getLastName());
+   doc.put("email", newUser.getEmail());      
+   WriteResult result = col.insert(doc);
+   
+   System.out.println("Inserted...");
+}//GEN-LAST:event_btnAddUserActionPerformed
+
+private void btnUpdateUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateUserActionPerformed
+   // TODO add your handling code here:
+   // Create user object
+   User newUser = new User();
+   newUser.setId(Integer.parseInt(txtId.getText()));
+   newUser.setFirstName(txtFirstName.getText());
+   newUser.setLastName(txtLastName.getText());
+   newUser.setEmail(txtEmail.getText());
+   
+   // Get connection to the Collection
+   DB userDB = DBManager.getDatabase();
+   DBCollection col = userDB.getCollection("user");
+   
+   // Search
+   BasicDBObject query = new BasicDBObject();     
+   query.put("_id", newUser.getId());
+           
+   // Update values
+   BasicDBObject doc = new BasicDBObject(); 
+   doc.put("firstName", newUser.getFirstName());
+   doc.put("lastName", newUser.getLastName());
+   doc.put("email", newUser.getEmail());    
+   
+   /* 
+   // Method A
+   // This will update all values, including all fields and values
+   WriteResult result = col.update(query, doc);
+   */
+         
+   //Method B
+   // Update object only with the relevant fields using $set
+   BasicDBObject updateObj = new BasicDBObject();
+   updateObj.put("$set", doc);      
+   WriteResult result = col.update(query, updateObj);
+   
+   System.out.println("Updated...");
+}//GEN-LAST:event_btnUpdateUserActionPerformed
+
+private void btnFindUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFindUserActionPerformed
+   // TODO add your handling code here:
+   // Get connection to the Collection
+   DB userDB = DBManager.getDatabase();
+   DBCollection col = userDB.getCollection("user");
+   
+   // Search
+   BasicDBObject searchQuery = new BasicDBObject();
+	searchQuery.put("_id", Integer.parseInt(txtId.getText()));
+	 
+	DBCursor cursor = col.find(searchQuery);		 
+   while (cursor.hasNext()) {
+      // Access next object
+      cursor.next();
+      
+      // Get the whole document printed in the console, if needed
+      System.out.println(cursor.curr());  
+      
+      // Find by field and set to user object
+      User newUser = new User();
+      newUser.setId(Integer.parseInt(cursor.curr().get("_id").toString()));
+      newUser.setFirstName(cursor.curr().get("firstName").toString());
+      newUser.setLastName(cursor.curr().get("lastName").toString());
+      newUser.setEmail(cursor.curr().get("email").toString());
+      
+      // Show in the form
+      txtId.setText(String.valueOf(newUser.getId()));
+      txtFirstName.setText(newUser.getFirstName());
+      txtLastName.setText(newUser.getLastName());
+      txtEmail.setText(newUser.getEmail());
+   }      
+}//GEN-LAST:event_btnFindUserActionPerformed
+
+private void btnDeleteUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteUserActionPerformed
+   // TODO add your handling code here:
+   // Get connection to the Collection
+   DB userDB = DBManager.getDatabase();
+   DBCollection col = userDB.getCollection("user");
+   
+   try {
+      BasicDBObject searchQuery = new BasicDBObject();
+      searchQuery.put("_id", Integer.parseInt(txtId.getText()));
+      col.remove(searchQuery);
+      System.out.println("Deleted...");
+   } catch (MongoException e) {
+      e.printStackTrace();
+   }
+   
+   // Empty the form
+   txtId.setText("");
+   txtFirstName.setText("");
+   txtLastName.setText("");
+   txtEmail.setText("");
+}//GEN-LAST:event_btnDeleteUserActionPerformed
+************************************************************
+
+*** Main3.java ***
+private void btnAddUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddUserActionPerformed
+    // TODO add your handling code here:      
+    // Get connection to the Collection
+    DB userDB = DBManager.getDatabase();
+    DBCollection col = userDB.getCollection("user");      
+    // Insert the Document
+    BasicDBObject doc = new BasicDBObject();     
+    doc.put("_id", Integer.parseInt(txtId.getText()));
+    doc.put("firstName", txtFirstName.getText());
+    doc.put("lastName", txtLastName.getText());    
+    WriteResult result = col.insert(doc);
+ }//GEN-LAST:event_btnAddUserActionPerformed
+
+ private void btnUpdateUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateUserActionPerformed
+    // Get connection to the Collection
+    DB userDB = DBManager.getDatabase();
+    DBCollection col = userDB.getCollection("user");      
+    // Search
+    BasicDBObject query = new BasicDBObject();     
+    query.put("_id", Integer.parseInt(txtId.getText()));              
+    // Update values
+    BasicDBObject doc = new BasicDBObject(); 
+    doc.put("firstName", txtFirstName.getText());
+    doc.put("lastName", txtLastName.getText());      
+    // Update object only with the relevant fields using $set
+    BasicDBObject updateObj = new BasicDBObject();
+    updateObj.put("$set", doc);      
+    WriteResult result = col.update(query, updateObj);
+ }//GEN-LAST:event_btnUpdateUserActionPerformed
+
+ private void btnFindUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFindUserActionPerformed
+    // Get connection to the Collection
+    DB userDB = DBManager.getDatabase();
+    DBCollection col = userDB.getCollection("user");      
+    // Search
+    BasicDBObject searchQuery = new BasicDBObject();
+	searchQuery.put("_id", Integer.parseInt(txtId.getText()));
+	 
+	DBCursor cursor = col.find(searchQuery);		 
+    while (cursor.hasNext()) {         
+       // Find by field and show in the form
+       txtFirstName.setText(cursor.next().get("firstName").toString());
+       txtLastName.setText(cursor.curr().get("lastName").toString());
+    }
+ }//GEN-LAST:event_btnFindUserActionPerformed
+
+ private void btnUpsertUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpsertUserActionPerformed
+    // Get connection to the Collection
+    DB userDB = DBManager.getDatabase();
+    DBCollection col = userDB.getCollection("user");      
+    // Search
+    BasicDBObject query = new BasicDBObject();     
+    query.put("_id", Integer.parseInt(txtId.getText()));              
+    // Update values
+    BasicDBObject doc = new BasicDBObject(); 
+    doc.put("firstName", txtFirstName.getText());
+    doc.put("lastName", txtLastName.getText());      
+    // Update object only with the relevant fields using $set
+    BasicDBObject updateObj = new BasicDBObject();
+    updateObj.put("$set", doc);      
+    
+    // Only difference is last two parameters
+    /*Parameters:
+    q - the selection criteria for the update
+    o - the modifications to apply
+    upsert - when true, inserts a document if no document matches the update query criteria
+    multi - when true, updates all documents in the collection that 
+             match the update query criteria, otherwise only updates one
+    */
+    WriteResult result = col.update(query, updateObj, true, false);
+ }//GEN-LAST:event_btnUpsertUserActionPerformed
