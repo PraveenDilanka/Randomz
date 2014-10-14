@@ -1,0 +1,483 @@
+*** NewMessage.java ***
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package ejb;
+
+import javax.annotation.Resource;
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.MessageDriven;
+import javax.ejb.MessageDrivenContext;
+import javax.jms.JMSDestinationDefinition;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+/**
+ *
+ * @author PDK
+ */
+
+@JMSDestinationDefinition(name = "jms/NewMessage", interfaceName = "javax.jms.Queue", resourceAdapter = "jmsra", destinationName = "NewMessage")
+// Code that was generated
+/*
+@MessageDriven(activationConfig = {
+    @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+    @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "jms/NewMessage")
+})
+*/
+// Code in Tutorial
+@MessageDriven(mappedName = "jms/NewMessage", activationConfig = {
+    @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+    @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
+})
+
+public class NewMessage implements MessageListener {
+    
+    @Resource
+    private MessageDrivenContext mdc;
+    @PersistenceContext(unitName = "NewsApp-ejbPU")
+    private EntityManager em;
+            
+    public NewMessage() {
+    }
+    
+    @Override
+    public void onMessage(Message message) {
+        ObjectMessage msg = null;
+        try {
+            if (message instanceof ObjectMessage) {
+                msg = (ObjectMessage) message;
+                NewsEntity e = (NewsEntity) msg.getObject();
+                save(e);
+            }
+        } catch(JMSException e){
+            e.printStackTrace();
+            mdc.setRollbackOnly();
+        } catch (Throwable te){
+            te.printStackTrace();
+        }
+    }
+
+    public void save(Object object) {
+        em.persist(object);
+    }
+    
+}
+
+*****************************************
+*** NewsEntity.java ***
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package ejb;
+
+import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+/**
+ *
+ * @author PDK
+ */
+@Entity
+public class NewsEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    private String title;
+    private String body;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof NewsEntity)) {
+            return false;
+        }
+        NewsEntity other = (NewsEntity) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ejb.NewsEntity[ id=" + id + " ]";
+    }
+    
+}
+****************************************************
+*** NewsEntityFacade.java ***
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package ejb;
+
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+/**
+ *
+ * @author PDK
+ */
+@Stateless
+public class NewsEntityFacade extends AbstractFacade<NewsEntity> {
+    @PersistenceContext(unitName = "NewsApp-ejbPU")
+    private EntityManager em;
+
+    @Override
+    protected EntityManager getEntityManager() {
+        return em;
+    }
+
+    public NewsEntityFacade() {
+        super(NewsEntity.class);
+    }
+    
+}
+******************************************************************
+
+
+*** SessionManagerBean.java ***
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package ejb;
+
+import javax.ejb.Singleton;
+import javax.ejb.LocalBean;
+import javax.servlet.annotation.WebListener;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
+
+/**
+ *
+ * @author PDK
+ */
+@Singleton
+@LocalBean
+@WebListener
+public class SessionManagerBean implements HttpSessionListener{
+    private static int counter = 0;
+    
+    @Override
+    public void sessionCreated(HttpSessionEvent se) {
+        counter++;
+    }
+
+    @Override
+    public void sessionDestroyed(HttpSessionEvent se) {
+        counter--;        
+    }
+
+    public int getActiveSessionsCount(){
+        return counter;
+    }
+}
+*********************************************************
+
+*** ListNews.java ***
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package web;
+
+import ejb.NewsEntity;
+import ejb.NewsEntityFacade;
+import ejb.SessionManagerBean;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.List;
+import javax.ejb.EJB;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ *
+ * @author PDK
+ */
+@WebServlet(name = "ListNews", urlPatterns = {"/ListNews"})
+public class ListNews extends HttpServlet {
+    @EJB
+    private NewsEntityFacade newsEntityFacade;    
+    @EJB
+    private SessionManagerBean sessionManagerBean;
+
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getSession(true);
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet ListNews</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet ListNews at " + request.getContextPath() + "</h1>");
+            
+            // Print message and add a link to the Post Message servlet
+            List news = newsEntityFacade.findAll();
+            for(Iterator it = news.iterator(); it.hasNext();){
+                NewsEntity elem = (NewsEntity)it.next();
+                out.println(" <b>"+elem.getTitle()+" </b><br/>");
+                out.println(elem.getBody()+"<br/>");
+            }
+            out.println("<a href='PostMessage'>Add new message</a>");
+            
+            // Retrieve and print the no. of users/open sessions
+            out.println("<br><br>");
+            out.println(sessionManagerBean.getActiveSessionsCount() + " user(s) reading the news.");
+            
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
+
+}
+******************************************************
+
+*** PostMessage.java ***
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package web;
+
+import ejb.NewsEntity;
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.annotation.Resource;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ *
+ * @author PDK
+ */
+@WebServlet(name = "PostMessage", urlPatterns = {"/PostMessage"})
+public class PostMessage extends HttpServlet {
+    @Resource(mappedName="jms/NewMessageFactory")
+    private ConnectionFactory connectionFactory;
+    
+    @Resource(mappedName="jms/NewMessage")
+    private Queue queue;     
+    
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        
+        String title = request.getParameter("title");
+        String body = request.getParameter("body");
+        if((title != null) && (body != null)){
+            try {
+                Connection connection = connectionFactory.createConnection();
+                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                MessageProducer messageProducer = session.createProducer(queue);
+                
+                ObjectMessage message = session.createObjectMessage();
+                NewsEntity e = new NewsEntity();
+                e.setTitle(title);
+                e.setBody(body);
+                
+                message.setObject(e);
+                messageProducer.send(message);
+                messageProducer.close();
+                connection.close();
+                response.sendRedirect("ListNews");
+            } catch (JMSException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet PostMessage</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet PostMessage at " + request.getContextPath() + "</h1>");
+            
+            // Add form to the web page
+            out.println("<form>");
+            out.println("Title: <input type='text' name='title'><br/>");
+            out.println("Message: <textarea name='body'></textarea><br/>");
+            out.println("<input type='submit'><br/>");
+            out.println("</form>");
+            
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
+
+}
+******************************************************
