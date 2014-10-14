@@ -1,0 +1,85 @@
+***** SERVICE PATH *****
+http://localhost:8080/CurrencyConverter-war/MyConvertService?WSDL
+http://localhost:8080/  CurrencyConverter-war/  MyConvertService  ?WSDL
+
+****** WEB SERVICE lab *****
+
+NET BEANS WEB SERVICE AND CALL IT FROM C# APPLICATION
+Net Beans Web  Service
+1)Go to net beans -> new JAVA EE (ENTERPRISE APPLICATION) -> name(CurrencyConverter) -> GlassFish Server 4.0 and JAVA EE 6 -> Finish
+2)Go to CurrencyConverter-ejb module -> source packages -> create new package called “lk.sliit.converter” -> finish
+3)Right click on the package -> new -> other -> Enterprise Java Beans -> select Session Bean -> Give name (CurrencyConverter) -> select “local” -> then finish
+4)Go to CurrencyConverter.java class and add following business method :
+	public double convert(double val) {
+        		double fahrenheit = (9.0 / 5) * val + 32;
+		return fahrenheit;
+    	}
+
+5)Go to CurrencyConverterLocal.java and add following method signature :
+double convert(double val) ;
+6)Then clean and build and deploy.
+7)Go to CurrencyConverter-war package and create a new package called “lk.sliit.web”.
+8)Right click on new package -> new -> web services -> add web service -> next -> give name (MyConvertService) -> click on “create web service from existing session bean” -> then browse and select relevant bean (CurrencyConverter-ejb->Enterprise Beans->CurrencyConverter) -> finish
+9)deploy project
+10)Go to war module again and extract web services folder and right click on added web service -> select test web service -> now web page will appear and can see WSDL file.
+11)Now web service creation is ok.
+
+Visual Studio client
+1)file -> new -> console project -> name (CurrencyConverter) -> finish.
+2)Add a service reference :
+References -> add service reference -> give WSDL URL -> Go -> Give service reference name (MyService) -> OK.
+3)Then add following code to the main program :
+
+  MyService.MyConvertServiceClient client = new MyService.MyConvertServiceClient();
+  Console.WriteLine(client.convert(100));
+  Console.ReadLine();
+
+
+4)Now run the visual studio project and see the result.
+
+**************************************************************
+
+*****  METHOD 1 - Client-Server Netbeans *****
+
+---- CurrencyConverter - ejb ----
+*** CurrencyConvertor.java ***
+package it11057420.convertor;
+import javax.ejb.Stateless;
+
+@Stateless
+public class CurrencyConvertor implements CurrencyConvertorLocal {
+   public double convert(double val) {
+      double fahrenheit = (9.0 / 5) * val + 32;
+      return fahrenheit;
+   }
+}
+
+*** CurrencyConvertorLocal.java ***
+package it11057420.convertor;
+import javax.ejb.Local;
+
+@Local
+public interface CurrencyConvertorLocal {
+   double convert(double val);
+}
+
+---- CurrencyConverter - war ---- [AUTOMATICALLY CREATED]
+*** MyConvertService.java ***
+package it11057420_web;
+import it11057420.convertor.CurrencyConvertorLocal;
+import javax.ejb.EJB;
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+
+@WebService(serviceName = "MyConvertService")
+public class MyConvertService {
+   @EJB
+   private CurrencyConvertorLocal ejbRef;
+
+   @WebMethod(operationName = "convert")
+   public double convert(@WebParam(name = "val") double val) {
+      return ejbRef.convert(val);
+   }
+}
+**************************************************************
