@@ -1,3 +1,6 @@
+***** LINKS *****
+https://netbeans.org/kb/docs/websvc/jax-ws.html?print=yes
+
 ***** SERVICE PATH *****
 http://localhost:8080/CurrencyConverter-war/MyConvertService?WSDL
 http://localhost:8080/  CurrencyConverter-war/  MyConvertService  ?WSDL
@@ -81,5 +84,45 @@ public class MyConvertService {
    public double convert(@WebParam(name = "val") double val) {
       return ejbRef.convert(val);
    }
+}
+**************************************************************
+
+*****  METHOD 2 - Client C# - Server Netbeans *****
+// Add service as ConverterService
+// http://localhost:8080/CurrencyConverter-war/MyConvertService?WSDL
+*** Program.cs ***
+static void Main(string[] args)
+{
+	ConverterService.MyConvertServiceClient client = new ConverterService.MyConvertServiceClient();
+	Console.WriteLine(client.convert(100));
+	Console.ReadLine();
+}
+**************************************************************
+
+*****  METHOD 3 - Client-Server C# *****
+---- WS_Server ----
+*** IT11057420_ConvertorService.asmx ***
+[WebService(Namespace = "http://tempuri.org/")]
+[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+[System.ComponentModel.ToolboxItem(false)]
+// To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
+// [System.Web.Script.Services.ScriptService]
+public class IT11057420_ConvertorService : System.Web.Services.WebService
+{
+	[WebMethod]
+	public double convert(double val)
+	{
+	    double fahrenheit = (9.0 / 5) * val + 32;
+	    return fahrenheit;
+	}
+}
+
+---- WS_Client ----
+*** Form1.cs ***
+private void button1_Click(object sender, EventArgs e)
+{
+    ServiceReference1.T11057420_ConvertorServiceSoapClient client = new ServiceReference1.T11057420_ConvertorServiceSoapClient();
+    double v = client.convert(23);
+    label1.Text = Convert.ToString(v);
 }
 **************************************************************
